@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OJ 模拟器 · 在线判题小游戏</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            background: linear-gradient(145deg, #0b1a2e 0%, #1b2f45 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Segoe UI', 'Fira Code', 'Cascadia Code', monospace;
+            padding: 16px;
+        }
+        .oj-container {
+            max-width: 950px;
+            width: 100%;
+            background: #112131;
+            border-radius: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.7), 0 0 0 2px #2a3f5e inset;
+            padding: 30px;
+            color: #d9e9ff;
+            transition: all 0.2s;
+        }
+        /* 头部 — OJ 经典蓝 */
+        .oj-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #0e1a28;
+            border-radius: 30px;
+            padding: 18px 28px;
+            margin-bottom: 25px;
+            border: 1px solid #2e4b70;
+            box-shadow: 0 8px 0 #0a121e;
+        }
+        .oj-header h1 {
+            font-weight: 600;
+            font-size: 2.2rem;
+            letter-spacing: 2px;
+            background: linear-gradient(135deg, #b3d9ff, #7aa9d9);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 2px 5px #00000060;
+        }
+        .badge {
+            background: #1e3b5a;
+            padding: 8px 18px;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 1.2rem;
+            color: #c4e1ff;
+            box-shadow: inset 0 -2px 0 #0f1f30;
+            border-left: 2px solid #3d6b99;
+        }
+        /* 问题卡片 */
+        .problem-box {
+            background: #0d1a26;
+            border-radius: 28px;
+            padding: 24px;
+            margin-bottom: 25px;
+            border: 1px solid #2f4d73;
+            box-shadow: 0 10px 0 #07111e;
+        }
+        .problem-title {
+            font-size: 1.9rem;
+            font-weight: 700;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            border-bottom: 2px dashed #2e4b70;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .problem-title span {
+            background: #264a6e;
+            border-radius: 60px;
+            font-size: 1.2rem;
+            padding: 5px 15px;
+            color: white;
+        }
+        .statement {
+            background: #0f1f30;
+            padding: 20px;
+            border-radius: 18px;
+            font-size: 1.15rem;
+            line-height: 1.5;
+            border-left: 10px solid #3e6d9e;
+            margin-bottom: 20px;
+            box-shadow: inset 0 0 10px #00000055;
+        }
+        .sample {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+        .sample-in, .sample-out {
+            flex: 1 1 200px;
+            background: #102433;
+            border-radius: 18px;
+            padding: 15px;
+            border: 1px solid #385d88;
+        }
+        .sample h4 {
+            color: #9ac4ff;
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+        }
+        .sample pre {
+            background: #061016;
+            padding: 12px;
+            border-radius: 12px;
+            color: #c6e2ff;
+            font-family: 'Fira Code', monospace;
+            border: 1px solid #1d3f5c;
+            white-space: pre-wrap;
+        }
+        /* 编辑器面板 */
+        .editor-panel {
+            background: #0c1926;
+            border-radius: 28px;
+            padding: 24px;
+            border: 1px solid #2c4b70;
+            box-shadow: 0 10px 0 #08121e;
+            margin-bottom: 25px;
+        }
+        .lang-selector {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 18px;
+            align-items: center;
+        }
+        .lang-btn {
+            background: #1d3146;
+            border: none;
+            color: #aac4e0;
+            font-family: inherit;
+            font-weight: 600;
+            padding: 10px 20px;
+            border-radius: 40px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: 0.1s ease;
+            box-shadow: 0 4px 0 #0a131f;
+            border: 1px solid #3b5f86;
+        }
+        .lang-btn.active {
+            background: #2f6192;
+            color: white;
+            box-shadow: 0 2px 0 #1a3450;
+            transform: translateY(2px);
+            border-color: #70b0ff;
+        }
+        .code-area {
+            background: #0b121f;
+            border-radius: 24px;
+            padding: 20px;
+            border: 2px solid #1f3f60;
+        }
+        textarea {
+            width: 100%;
+            background: #0d1a2b;
+            border: none;
+            color: #cde1ff;
+            font-family: 'Fira Code', monospace;
+            font-size: 1rem;
+            line-height: 1.6;
+            padding: 15px;
+            border-radius: 18px;
+            resize: vertical;
+            min-height: 220px;
+            border: 1px solid #2d5780;
+            outline: none;
+            transition: 0.15s;
+        }
+        textarea:focus {
+            border-color: #6da5ff;
+            box-shadow: 0 0 0 3px #1a4979;
+        }
+        /* 控制栏 */
+        .action-bar {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+            align-items: center;
+        }
+        .submit-btn {
+            background: #257a5c;
+            border: none;
+            color: white;
+            font-weight: 700;
+            font-size: 1.3rem;
+            padding: 14px 36px;
+            border-radius: 60px;
+            box-shadow: 0 7px 0 #0b3729, 0 0 0 2px #5abf96 inset;
+            cursor: pointer;
+            transition: 0.06s linear;
+            letter-spacing: 1px;
+        }
+        .submit-btn:active {
+            transform: translateY(5px);
+            box-shadow: 0 2px 0 #0b3729, 0 0 0 2px #7edbb2 inset;
+        }
+        .reset-btn {
+            background: #3d3f5e;
+            border: none;
+            color: #ddd;
+            font-weight: 600;
+            font-size: 1.2rem;
+            padding: 14px 28px;
+            border-radius: 60px;
+            box-shadow: 0 6px 0 #202233;
+            cursor: pointer;
+            border: 1px solid #6f79ad;
+        }
+        .reset-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 #202233;
+        }
+        /* 结果区域 */
+        .result-panel {
+            background: #0e1d2d;
+            border-radius: 28px;
+            padding: 22px;
+            border: 1px solid #3f6190;
+            box-shadow: 0 8px 0 #08131f;
+        }
+        .verdict {
+            font-size: 1.6rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+        .verdict-badge {
+            padding: 10px 28px;
+            border-radius: 50px;
+            background: #1e3148;
+            border-left: 10px solid;
+            font-size: 1.5rem;
+        }
+        .verdict-badge.accepted { background: #1e4a3a; border-left-color: #6ae2a0; color: #ccffe4; }
+        .verdict-badge.wrong { background: #632c3b; border-left-color: #ff8a9f; color: #ffdae2; }
+        .verdict-badge.pending { background: #2f3e5e; border-left-color: #ffdb8e; color: #fff1cf; }
+        .detail-log {
+            background: #102536;
+            border-radius: 20px;
+            padding: 20px;
+            font-family: 'Fira Code', monospace;
+            border: 1px solid #31547c;
+            color: #bcd5ff;
+            white-space: pre-wrap;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+        .github-guide {
+            margin-top: 30px;
+            background: #182b40;
+            border-radius: 22px;
+            padding: 18px 24px;
+            border: 1px solid #4a6f96;
+            color: #b5d6ff;
+            font-size: 0.95rem;
+        }
+        .github-guide summary {
+            font-weight: 700;
+            color: #b3d6ff;
+            cursor: pointer;
+            font-size: 1.15rem;
+        }
+        .github-guide pre {
+            background: #0d1f30;
+            padding: 10px;
+            border-radius: 12px;
+            margin-top: 10px;
+            border: 1px solid #306491;
+        }
+        a {
+            color: #8fcbff;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+<div class="oj-container">
+    <!-- 头部 OJ 氛围 -->
+    <div class="oj-header">
+        <h1>⚡ JUDGE 0x3F</h1>
+        <div class="badge">#A+B · 模拟赛</div>
+    </div>
+
+    <!-- 问题描述区 (经典A+B，但带陷阱，更有oj感) -->
+    <div class="problem-box">
+        <div class="problem-title">
+            P1001 · A+B Problem (hard ver.)
+            <span>输入只有一行?</span>
+        </div>
+        <div class="statement">
+            🔥 给你两个整数 <strong>a</strong> 和 <strong>b</strong> (可能很大，但不超过 10^9) ，<br>
+            请输出它们的和。但OJ有严格的格式要求：<br>
+            • 输入只有一行，包含两个整数，但两个整数之间可能有 <strong>多个空格或tab</strong>。<br>
+            • 输出必须为 <strong>"Sum = x"</strong> (x 是结果) ，并且末尾不能有多余空格。<br>
+            ✨ 例如: 输入 "5     8"  输出 "Sum = 13"
+        </div>
+        <div class="sample">
+            <div class="sample-in">
+                <h4>📥 样例输入</h4>
+                <pre>20     30</pre>
+            </div>
+            <div class="sample-out">
+                <h4>📤 样例输出</h4>
+                <pre>Sum = 50</pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 代码提交面板（模拟语言切换，oj经典） -->
+    <div class="editor-panel">
+        <div class="lang-selector">
+            <button class="lang-btn active" data-lang="cpp">C++17</button>
+            <button class="lang-btn" data-lang="python">Python 3.12</button>
+            <button class="lang-btn" data-lang="java">Java 21</button>
+            <span style="margin-left:auto; color:#8db0d4;">⌨️ 提交代码</span>
+        </div>
+        <div class="code-area">
+            <textarea id="codeInput" placeholder="// 在这里编写你的代码...">#include &lt;iostream&gt;
+using namespace std;
+int main() {
+    int a, b;
+    cin >> a >> b;
+    cout << "Sum = " << a + b << endl;
+    return 0;
+}</textarea>
+        </div>
+        <!-- 操作按钮组 -->
+        <div class="action-bar">
+            <button class="submit-btn" id="submitCode">🚀 提交 (Submit)</button>
+            <button class="reset-btn" id="resetCode">↺ 重置代码</button>
+        </div>
+    </div>
+
+    <!-- 评测结果展示 (实时模拟) -->
+    <div class="result-panel">
+        <div class="verdict" id="verdictArea">
+            <span class="verdict-badge pending" id="verdictBadge">⚪ 等待提交</span>
+            <span id="passInfo">🕒 尚无评测</span>
+        </div>
+        <div class="detail-log" id="judgeLog">
+            👨‍💻 点击「提交」模拟OJ判题...
+        </div>
+    </div>
+
+    <!-- 隐藏的 GitHub 部署指南 (即配置方法) -->
+    <details class="github-guide">
+        <summary>📘 点此查看「配置到 GitHub」方法</summary>
+        <pre style="white-space: pre-wrap;">
+✨ 将本文件部署到 GitHub Pages 的步骤：
+
+1. 在 GitHub 新建一个仓库 (例如 OJ-Simulator)
+2. 将本 HTML 文件保存为 index.html (或者任意名字 .html)
+3. 上传到仓库根目录：
+   - 可以使用 git 命令行，或者直接网页上传
+4. 启用 GitHub Pages：
+   - 进入仓库 Settings → Pages
+   - 在 "Branch" 选择 main 分支，文件夹 / (root)  → Save
+5. 等待几分钟，访问 https://&lt;你的用户名&gt;.github.io/&lt;仓库名&gt; 
+   即可畅玩 OJ 模拟器！
+
+✅ 小提示：因为是纯静态页面，无需编译，直接托管即可。
+        </pre>
+        <p style="margin-top:8px;">🔗 官方文档: <a href="https://docs.github.com/zh/pages" target="_blank">GitHub Pages 指南</a></p>
+    </details>
+</div>
+
+<script>
+    (function() {
+        // ---------- 模拟判题内核 ----------
+        // 预设的样例输入/输出
+        const SAMPLE_INPUT = "20     30";
+        const SAMPLE_OUTPUT = "Sum = 50";
+
+        // 语言模板映射 (仅仅为了切换便利 + 好玩)
+        const templates = {
+            cpp: `#include <iostream>\nusing namespace std;\nint main() {\n    int a, b;\n    cin >> a >> b;\n    cout << "Sum = " << a + b << endl;\n    return 0;\n}`,
+            python: `a, b = map(int, input().split())\nprint(f"Sum = {a + b}")`,
+            java: `import java.util.Scanner;\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        int a = sc.nextInt();\n        int b = sc.nextInt();\n        System.out.println("Sum = " + (a + b));\n    }\n}`
+        };
+
+        // DOM 元素
+        const codeInput = document.getElementById('codeInput');
+        const submitBtn = document.getElementById('submitCode');
+        const resetBtn = document.getElementById('resetCode');
+        const verdictBadge = document.getElementById('verdictBadge');
+        const passInfo = document.getElementById('passInfo');
+        const judgeLog = document.getElementById('judgeLog');
+        const langBtns = document.querySelectorAll('.lang-btn');
+
+        // 当前激活语言 (用于切换高亮)
+        let currentLang = 'cpp';
+
+        // 语言切换事件
+        langBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                langBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                const lang = btn.dataset.lang;
+                currentLang = lang;
+                // 切换代码模板 (不覆盖用户已修改? 但OJ模拟里一般切语言给默认模板)
+                if (templates[lang]) {
+                    codeInput.value = templates[lang];
+                }
+                // 同时可以小日志提醒
+                judgeLog.innerText = `// 语言已切换为 ${lang.toUpperCase()}\n// 你可以继续编辑代码`;
+            });
+        });
+
+        // 重置代码为当前语言模板
+        resetBtn.addEventListener('click', () => {
+            if (templates[currentLang]) {
+                codeInput.value = templates[currentLang];
+            }
+            // 重置结果区域 (可选)
+            verdictBadge.className = 'verdict-badge pending';
+            verdictBadge.innerText = '⚪ 等待提交';
+            passInfo.innerText = '🔄 编辑器已重置';
+            judgeLog.innerText = '📝 代码已恢复默认模板，可以重新提交。';
+        });
+
+        // ---------- 提交判题逻辑 (模拟OJ) ----------
+        submitBtn.addEventListener('click', () => {
+            // 获取用户代码
+            const userCode = codeInput.value.trim() || "(空代码)";
+
+            // 设置界面为 pending 状态
+            verdictBadge.className = 'verdict-badge pending';
+            verdictBadge.innerText = '⏳ 评测中';
+            passInfo.innerText = '⏱️ 运行测试点 1/1';
+            judgeLog.innerText = '📡 正在编译 & 运行 ... (模拟延迟)';
+
+            // 延迟模拟异步判题 (增加真实感)
+            setTimeout(() => {
+                // 在这里模拟评测: 通过检查代码里是否包含关键特征来判断结果 (纯娱乐性判题)
+                // 但是因为是个OJ模拟器，我们使用更健壮的“模拟策略”：我们检查代码中是否出现 "Sum =" 这种输出？但更好的是，我们根据代码内容生成不同结果，保持趣味。
+                // 由于真正执行代码不可能，我们做基于规则的“伪判题”：
+                const lowerCode = userCode.toLowerCase();
+
+                // 硬核检测: 是否包含 "sum =" 或 "sum=" 输出? 同时不能有明显的错误写法？
+                // 为了效果，我们定义几个“错误类型” + 一个“通过”条件。
+                // 正确输出必须包含类似 "Sum = " (注意大小写) 并且包含 a+b 之类的操作。
+                // 但为了不过于复杂，随机一点？不，要给玩家目标: 实现真正的A+B并符合格式。
+
+                // 正规模拟: 包含 "Sum = " 且包含"a+b" 或 "a + b" (忽略小问题)
+                const hasSumOutput = lowerCode.includes('sum =') || lowerCode.includes('"sum =') || lowerCode.includes("'sum =");
+                const hasAddition = lowerCode.includes('a+b') || lowerCode.includes('a + b') || lowerCode.includes('a,b') || lowerCode.includes('a, b') || lowerCode.includes('a>>b') /* 滑稽 */;
+                const hasPrintSum = lowerCode.includes('cout <<') || lowerCode.includes('print') || lowerCode.includes('system.out');
+
+                // 还要避免常见陷阱：cin/scanf input split 等其实没关系
+                // 我们故意设置一个伪“正确”条件：代码里同时包含 sum 以及 a+b 倾向。
+                let verdict = '';
+                let message = '';
+                let pass = false;
+
+                if (lowerCode.includes('sum =') && (lowerCode.includes('a+b') || lowerCode.includes('a + b') || (lowerCode.includes('a') && lowerCode.includes('b') && lowerCode.includes('+')))) {
+                    // 模拟通过
+                    verdict = 'accepted';
+                    message = '✅ 答案正确 (AC) ! 你的输出与样例输出一致。';
+                    pass = true;
+                } else if (lowerCode.includes('sum =') && !lowerCode.includes('+')) {
+                    verdict = 'wrong';
+                    message = '❌ 答案错误 (WA) —— 似乎没有对 a 和 b 进行加法? 再检查一下。';
+                } else if (!lowerCode.includes('sum')) {
+                    verdict = 'wrong';
+                    message = '❌ 输出格式错误 (PE) —— 输出应该包含 "Sum = " 哦。';
+                } else {
+                    // 默认错误
+                    verdict = 'wrong';
+                    message = '❌ 答案错误 (WA) —— 样例输入 20 30 期待输出 "Sum = 50"，检查你的逻辑。';
+                }
+
+                // 随机加点有趣的log (但基于规则)
+                let detailLog = '';
+                if (verdict === 'accepted') {
+                    detailLog = `> 测试点 1: 输入 "20     30"\n> 你的输出: "Sum = 50"\n> 结果: 答案正确。 🎉 太强了！`;
+                } else {
+                    detailLog = `> 测试点 1: 输入 "20     30"\n> 期待输出: "Sum = 50"\n> 你的输出: (模拟) "Sum =  ???"  —— 与实际不符或格式错误。\n> 评测信息: ${message}`;
+                }
+
+                // 更新UI
+                if (verdict === 'accepted') {
+                    verdictBadge.className = 'verdict-badge accepted';
+                    verdictBadge.innerText = '✅ 答案正确 (AC)';
+                    passInfo.innerText = '✔️ 通过全部测试点';
+                } else {
+                    verdictBadge.className = 'verdict-badge wrong';
+                    verdictBadge.innerText = '❌ 答案错误 (WA)';
+                    passInfo.innerText = '❌ 未通过测试点';
+                }
+                judgeLog.innerText = detailLog;
+
+            }, 800); // 延迟0.8秒模拟判题
+        });
+
+        // 一个小彩蛋：当textarea内容为空时提交，特殊处理
+        // 但已经在setTimeout里逻辑涵盖
+
+        // 初始化日志
+        judgeLog.innerText = '👨‍💻 点击「提交」模拟OJ判题...\n提示：你需要输出 "Sum = 两数之和" 格式。';
+    })();
+</script>
+<!-- 额外保证完全独立：无外部依赖，一个html搞定 -->
+</body>
+</html>
